@@ -82,6 +82,7 @@ const ExampleContainer = props => {
           style={{ borderWidth: 1, borderRadius: 10, paddingHorizontal: 15 }}
           labelField="label"
           valueField="value"
+          value={filter}
           onChange={value => setFilter(value)}
           placeholder="Select Breed"
         />
