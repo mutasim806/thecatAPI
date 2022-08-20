@@ -35,15 +35,21 @@ export const FontSize = {
 /**
  * Metrics Sizes
  */
-const tiny = 5 // 10
+const tiny = 5 // 5
 const small = tiny * 2 // 10
+const small2x = tiny * 4 // 20
 const regular = tiny * 3 // 15
+const regular2x = regular + small2x //25
 const large = regular * 2 // 30
+const large2x = regular * 4 // 60
 export const MetricsSizes = {
   tiny,
   small,
   regular,
   large,
+  small2x,
+  large2x,
+  regular2x
 }
 
 export default {

@@ -30,6 +30,18 @@ export default function ({ Colors, ...args }) {
         marginTop: 10,
         marginBottom: 10,
       },
+      border: {
+        borderWidth: 1
+      },
+      borderRadius: {
+        borderRadius: 10
+      },
+      borderRadius15: {
+        borderRadius: 15
+      },
+      alignEnd: {
+        alignSelf: 'flex-end'
+      }
     }),
   }
 }

@@ -8,47 +8,64 @@ import {
   ScrollView,
   FlatList,
   Image,
+  Modal,
 } from 'react-native'
-import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/Hooks'
 import { Dropdown } from 'react-native-element-dropdown'
+import ImageViewer from 'react-native-image-zoom-viewer'
 
-const ExampleContainer = props => {
+//Config
+import { Config } from '@/Config'
+
+const ExampleContainer = () => {
   const { Common, Fonts, Gutters, Layout } = useTheme()
+
+  const {
+    regularHPadding,
+    regularTMargin,
+    tinyTMargin,
+    small2xVMargin,
+    large2xBMargin,
+    regular2xTMargin,
+    small2xHMargin,
+    smallHPadding,
+  } = Gutters
+  const { border, borderRadius, alignEnd, borderRadius15 } = Common
+  const { textRegular } = Fonts
+  const { justifyContentAround, fill } = Layout
 
   const [data, setData] = useState(false)
   const [allBreeds, setAllBreeds] = useState([])
   const [filter, setFilter] = useState(false)
+  const [imageModel, setImageModel] = useState(false)
+  const [imageViewer, setImageViewer] = useState(false)
 
   var options = {
     method: 'GET',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'x-api-key': '079bd626-4ae4-4173-b28b-4c1a3ac5f131',
+      'x-api-key': Config.API_KEY,
     },
-    // body: JSON.stringify({
-    //   'client_id': '(API KEY)',
-    //   'client_secret': '(API SECRET)',
-    //   'grant_type': 'client_credentials'
-    // })
   }
 
   useEffect(() => {
-    fetch('https://api.thecatapi.com/v1/images/search?limit=10', options)
-      .then(response => response.json())
-      .then(json => setData(json))
-      .catch(error => console.error(error))
-    // .finally(() => setLoading(false));
-
+    getCatsAPI()
     getBreedsAPI()
   }, [])
 
+  const getCatsAPI = () => {
+    fetch(`${Config.API_URL}/images/search?limit=10`, options)
+      .then(response => response.json())
+      .then(json => setData(json))
+      .catch((error) => {})
+  }
+
   const getBreedsAPI = () => {
-    fetch('https://api.thecatapi.com/v1/breeds', options)
+    fetch(`${Config.API_URL}/breeds`, options)
       .then(response => response.json())
       .then(json => getallBreeds(json))
-      .catch(err => console.log('breed err', err))
+      .catch((err) => {})
   }
 
   const getallBreeds = data => {
@@ -58,28 +75,26 @@ const ExampleContainer = props => {
         return {
           label: item.name,
           value: item.id,
-          image: item.image?.url,
+          url: item.image?.url,
         }
       })
     setAllBreeds(breedsList)
   }
 
-  console.log('allBreeds', allBreeds)
-  console.log('data', data)
+  const openImage = item => {
+    setImageViewer([item])
+    setImageModel(!imageModel)
+  }
 
   return (
     <ScrollView
-      style={Layout.fill}
-      contentContainerStyle={[
-        Layout.fill,
-        // Layout.colCenter,
-        Gutters.smallHPadding,
-      ]}
+      style={fill}
+      contentContainerStyle={[fill, smallHPadding]}
     >
-      <View style={{ marginTop: 15 }}>
+      <View style={[regularTMargin]}>
         <Dropdown
           data={allBreeds}
-          style={{ borderWidth: 1, borderRadius: 10, paddingHorizontal: 15 }}
+          style={[regularHPadding, border, borderRadius]}
           labelField="label"
           valueField="value"
           value={filter}
@@ -87,38 +102,66 @@ const ExampleContainer = props => {
           placeholder="Select Breed"
         />
         {filter && (
-          <TouchableOpacity onPress={() => setFilter(false)} style={{ alignSelf: 'flex-end', marginTop: 5 }}>
+          <TouchableOpacity
+            onPress={() => setFilter(false)}
+            style={[tinyTMargin, alignEnd]}
+          >
             <Text style={{ color: 'green' }}>clear filter</Text>
           </TouchableOpacity>
         )}
       </View>
-      <View style={[{ marginVertical: 20, marginBottom: 60 }]}>
+      <View style={[small2xVMargin, large2xBMargin]}>
         {filter ? (
-          <View style={{ marginTop: 25 }}>
+          <TouchableOpacity
+            style={[regular2xTMargin]}
+            onPress={() => openImage(filter)}
+          >
             <Image
-              source={{ uri: filter.image }}
-              style={{ width: 150, height: 150, borderRadius: 15 }}
+              source={{ uri: filter.url }}
+              style={[borderRadius15, { width: 150, height: 150 }]}
             />
-          </View>
+          </TouchableOpacity>
         ) : (
           <FlatList
             numColumns={2}
             data={data}
-            columnWrapperStyle={{
-              justifyContent: 'space-around',
-            }}
+            columnWrapperStyle={[justifyContentAround]}
             renderItem={({ item }) => (
-              <View style={{ marginTop: 25 }}>
+              <TouchableOpacity
+                style={[regular2xTMargin]}
+                onPress={() => openImage(item)}
+              >
                 <Image
                   source={{ uri: item.url }}
-                  style={{ width: 150, height: 150, borderRadius: 15 }}
+                  style={[borderRadius15, { width: 150, height: 150 }]}
                 />
-              </View>
+              </TouchableOpacity>
             )}
             keyExtractor={item => item.id}
           />
         )}
       </View>
+      <Modal
+        visible={imageModel}
+        transparent={true}
+        onBackdropPress={() => setImageModel(!imageModel)}
+      >
+        <View style={{ flex: 1 }}>
+          <ImageViewer imageUrls={imageViewer} enableImageZoom={true} />
+          <TouchableOpacity
+            onPress={() => setImageModel(false)}
+            style={[
+              small2xHMargin,
+              {
+                position: 'absolute',
+                marginTop: 40,
+              },
+            ]}
+          >
+            <Text style={[textRegular, { color: 'red' }]}>X</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </ScrollView>
   )
 }
